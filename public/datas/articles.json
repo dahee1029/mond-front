@@ -1,0 +1,65 @@
+[
+  {
+    "author": "John Doe",
+    "title": "Top 10 Movies of 2024",
+    "contents": "This is a list of the top 10 movies to watch this year...",
+    "createdAt": "2025-01-05T14:30:00Z",
+    "category": "MOVIE"
+  },
+  {
+    "author": "Jane Smith",
+    "title": "The Evolution of Gaming",
+    "contents": "A look back at how gaming has changed over the decades...",
+    "createdAt": "2025-01-04T10:00:00Z",
+    "category": "GAME"
+  },
+  {
+    "author": "Alice Johnson",
+    "title": "Must-Read Books for Winter",
+    "contents": "Winter is here! Cozy up with these amazing reads...",
+    "createdAt": "2025-01-03T18:45:00Z",
+    "category": "BOOK"
+  },
+  {
+    "author": "Bob Lee",
+    "title": "Upcoming Blockbusters in 2025",
+    "contents": "Here are the movies you don't want to miss next year...",
+    "createdAt": "2025-01-02T20:15:00Z",
+    "category": "MOVIE"
+  },
+  {
+    "author": "Emily Davis",
+    "title": "The Best Indie Games of 2024",
+    "contents": "Explore the creative and innovative world of indie games...",
+    "createdAt": "2025-01-01T16:00:00Z",
+    "category": "GAME"
+  },
+  {
+    "author": "Chris Wilson",
+    "title": "Sci-Fi Books Everyone Should Read",
+    "contents": "Science fiction fans, this one's for you. Don't miss these classics...",
+    "createdAt": "2024-12-31T12:30:00Z",
+    "category": "BOOK"
+  },
+  {
+    "author": "Sophia Martin",
+    "title": "Behind the Scenes of Hollywood",
+    "contents": "A sneak peek into the world of movie-making...",
+    "createdAt": "2024-12-30T15:20:00Z",
+    "category": "MOVIE"
+  },
+  {
+    "author": "Liam Brown",
+    "title": "The Future of Gaming Technology",
+    "contents": "What does the future hold for gamers? Let's find out...",
+    "createdAt": "2024-12-29T11:00:00Z",
+    "category": "GAME"
+  },
+  {
+    "author": "Olivia Taylor",
+    "title": "Historical Fiction to Add to Your Shelf",
+    "contents": "Immerse yourself in the past with these captivating novels...",
+    "createdAt": "2024-12-28T08:45:00Z",
+    "category": "BOOK"
+  }
+]
