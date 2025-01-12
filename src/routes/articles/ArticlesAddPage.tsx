@@ -1,5 +1,8 @@
 import styled from "@emotion/styled";
 import { useEffect, useRef, useState } from "react";
+import postBoard from "../../apis/board/postBoard";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router";
 
 const Container = styled.div`
   display: flex;
@@ -59,12 +62,24 @@ function ArticlesAddPage() {
   const [category, setCategory] = useState<Category>("MOVIE"); //Movie Book Game
   const contentInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // useEffect(() => {
-  //   console.log("title", title);
-  // }, [title]);
+  const navigate = useNavigate();
 
-  //input 같은 태그는 비제어 컴포넌트이다!
-  //비제어 컴포넌트라 react의 state가 변경되지 않아도 변화가 보이는 것
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending, isSuccess } = useMutation({
+    mutationFn: postBoard,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["boardList"],
+      });
+
+      navigate(-1);
+    },
+    onError: () => {
+      alert("에러입니다!");
+    },
+  });
+
   return (
     <Container>
       <h1>게시글 등록</h1>
@@ -115,11 +130,18 @@ function ArticlesAddPage() {
         <StyledTextarea ref={contentInputRef} />
       </div>
       <SubmitBtn
+        // disabled={isPending}
         onClick={() => {
-          const titleValue = titleInputRef.current?.value;
-          const contentValue = contentInputRef.current?.value;
-          console.log("title", titleValue);
-          console.log("content", contentValue);
+          const titleValue = titleInputRef.current?.value || "";
+          const contentValue = contentInputRef.current?.value || "";
+
+          mutate({
+            boardWriter: "무몬",
+            boardPass: "1234",
+            boardCategory: category,
+            boardTitle: titleValue,
+            boardContents: contentValue,
+          });
         }}
       >
         제출

@@ -8,24 +8,35 @@ import UserLoginPage from "./routes/auth/UserLoginPage";
 import UserProfilePage from "./routes/auth/UserProfilePage";
 import UserSignupPage from "./routes/auth/UserSignupPage";
 import { RecoilRoot } from "recoil";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
+const queryClient = new QueryClient();
+
 function App() {
   return (
     <RecoilRoot>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<div>안녕하세요</div>} />
-          <Route path="/articles" element={<ArticlesMainPage />} />
-          <Route path="/articles/add" element={<ArticlesAddPage />} />
-          <Route path="/articles/:createdAt" element={<ArticlesDetailPage />} />
-          <Route
-            path="/articles/:createdAt/edit"
-            element={<ArticlesEditPage />}
-          />
-          <Route path="/auth/login" element={<UserLoginPage />} />
-          <Route path="/auth/signup" element={<UserSignupPage />} />
-          <Route path="/auth/:userId/profile" element={<UserProfilePage />} />
-        </Routes>
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<div>안녕하세요</div>} />
+            <Route path="/articles" element={<ArticlesMainPage />} />
+            <Route path="/articles/add" element={<ArticlesAddPage />} />
+            <Route
+              path="/articles/:createdAt"
+              element={<ArticlesDetailPage />}
+            />
+            <Route
+              path="/articles/:createdAt/edit"
+              element={<ArticlesEditPage />}
+            />
+            <Route path="/auth/login" element={<UserLoginPage />} />
+            <Route path="/auth/signup" element={<UserSignupPage />} />
+            <Route path="/auth/:userId/profile" element={<UserProfilePage />} />
+          </Routes>
+        </BrowserRouter>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
     </RecoilRoot>
   );
 }
