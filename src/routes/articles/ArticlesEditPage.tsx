@@ -1,6 +1,9 @@
 import { useNavigate, useParams } from "react-router";
 import styled from "@emotion/styled";
 import { useRef, useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import getBoardDetail from "../../apis/board/getBoardDetail";
+import putBoardDetail from "../../apis/board/putBoardDetail";
 
 const Container = styled.div`
   display: flex;
@@ -53,50 +56,85 @@ const SubmitBtn = styled.button`
   color: aliceblue;
 `;
 
-interface ArticleType {
-  author: string;
-  title: string;
-  contents: string;
-  createdAt: string;
-  category: "MOVIE" | "BOOK" | "GAME";
-}
+// | 는 union 타입인데 얘는 interface로는 못함.
+type Category = "GAME" | "BOOK" | "MOVIE";
 
 function ArticlesEditPage() {
-  const { createdAt } = useParams<{ createdAt: string }>();
-  const [article, setArticle] = useState<ArticleType | null>(null);
-  const [loading, setLoading] = useState(true);
+  // 1. 상세 데이터를 불러와서 input값 -> 채워줘야함.
+  // 2. 수정요청을 보내는 API를 쏴야할 수 있어야 하지
 
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const [category, setCategory] = useState<ArticleType["category"]>("MOVIE"); //Movie Book Game
   const contentInputRef = useRef<HTMLTextAreaElement>(null);
-  useEffect(() => {
-    const fetchArticleDetail = async () => {
-      try {
-        const data: ArticleType[] = await (
-          await fetch(`/datas/articles.json`)
-        ).json();
-        const selectedArticle = data.find(
-          (article) => article.createdAt === createdAt
-        );
-        setArticle(selectedArticle || null);
-      } catch (error) {
-        console.log("데이터를 불러오는 데에 실패하였습니다", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (createdAt) {
-      fetchArticleDetail();
+  const [category, setCategory] = useState<Category | null>(null);
+
+  const { id } = useParams<{ id: string }>();
+
+  const navigate = useNavigate();
+
+  // GET 요청을 보내는 경우 => useQuery
+  const { data, isLoading, isError, isSuccess } = useQuery({
+    queryKey: ["boardDetail", id],
+    queryFn: () => getBoardDetail({ id: Number(id as string) }),
+  });
+
+  const queryClient = useQueryClient();
+
+  // 게시물을 수정하게 되면 뭐를 갱신해야할까?
+  // 1. boardList GET하는 API를 갱신해야함.
+  // 2. boardDetail GET하는 API를 갱신해야함.
+
+  // POST, DELETE, PUT 같은 요청을 보내는 경우 => useMutation
+  const { mutate } = useMutation({
+    mutationFn: putBoardDetail,
+    onSuccess: async () => {
+      // 쿼리키에 해당하는 데이터를 stale로 만들어서 즉 쿼리를 무효화 시킴.
+      // 즉 이 무효화된 쿼리는 새로운 데이터를 받아오게 될 것임.
+
+      // 1. boardList 쿼리 데이터 무효화
+      await queryClient.invalidateQueries({
+        queryKey: ["boardList"],
+      });
+      // 2. boardDetail id 쿼리 데이터 무효화
+      await queryClient.invalidateQueries({
+        queryKey: ["boardDetail", id],
+      });
+      // 3. 뒤로가기
+      navigate(-1);
+    },
+    onError: () => {
+      alert("에러입니다!");
+    },
+  });
+
+  const onSubmitClick = () => {
+    if (
+      category !== null &&
+      contentInputRef.current &&
+      titleInputRef.current &&
+      isSuccess
+    ) {
+      mutate({
+        id: Number(id as string),
+        boardWriter: data.boardWriter,
+        boardPass: data.boardPass,
+        // 우리가 변경한 값.!
+        boardTitle: titleInputRef.current.value,
+        boardCategory: category,
+        boardContents: contentInputRef.current.value,
+      });
     }
-  }, [createdAt]);
+  };
 
   useEffect(() => {
-    if (article && titleInputRef.current && contentInputRef.current) {
-      titleInputRef.current.value = article.title;
-      contentInputRef.current.value = article.contents;
-      setCategory(article.category);
+    if (isSuccess) {
+      if (titleInputRef.current) titleInputRef.current.value = data.boardTitle;
+
+      if (contentInputRef.current)
+        contentInputRef.current.value = data.boardContents;
+
+      setCategory(data.boardCategory);
     }
-  }, [article]); // article이 변경될 때마다 실행
+  }, [data, isSuccess]);
 
   return (
     <Container>
@@ -147,17 +185,7 @@ function ArticlesEditPage() {
         <p>내용</p>
         <StyledTextarea ref={contentInputRef} />
       </div>
-      <SubmitBtn
-        onClick={() => {
-          const titleValue = titleInputRef.current?.value;
-          const contentValue = contentInputRef.current?.value;
-          console.log(category);
-          console.log("title", titleValue);
-          console.log("content", contentValue);
-        }}
-      >
-        제출
-      </SubmitBtn>
+      <SubmitBtn onClick={onSubmitClick}>제출</SubmitBtn>
     </Container>
   );
 }

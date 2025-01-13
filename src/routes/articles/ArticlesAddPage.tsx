@@ -69,6 +69,8 @@ function ArticlesAddPage() {
   const { mutate, isPending, isSuccess } = useMutation({
     mutationFn: postBoard,
     onSuccess: async () => {
+      // 쿼리키에 해당하는 데이터를 stale로 만들어서 즉 쿼리를 무효화 시킴.
+      // 즉 이 무효화된 쿼리는 새로운 데이터를 받아오게 될 것임.
       await queryClient.invalidateQueries({
         queryKey: ["boardList"],
       });

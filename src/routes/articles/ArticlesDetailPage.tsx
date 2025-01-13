@@ -1,14 +1,9 @@
 import { Link, useNavigate, useParams } from "react-router";
 import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
-
-interface ArticleType {
-  author: string;
-  title: string;
-  contents: string;
-  createdAt: string;
-  category: string;
-}
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import getBoardDetail from "../../apis/board/getBoardDetail";
+import deleteBoardDetail from "../../apis/board/deleteBoardDetail";
 
 const Container = styled.div`
   display: flex;
@@ -46,62 +41,67 @@ const Content = styled.div`
 `;
 
 function ArticlesDetailPage() {
-  const { createdAt } = useParams<{ createdAt: string }>();
-  const [article, setArticle] = useState<ArticleType | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { id } = useParams<{ id: string }>();
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchArticleDetail = async () => {
-      try {
-        const data: ArticleType[] = await (
-          await fetch(`/datas/articles.json`)
-        ).json();
-        const selectedArticle = data.find(
-          (article) => article.createdAt === createdAt
-        );
-        setArticle(selectedArticle || null);
-      } catch (error) {
-        console.log("데이터를 불러오는 데에 실패하였습니다", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (createdAt) {
-      fetchArticleDetail();
-    }
-  }, [createdAt]);
+  const { data, isLoading, isError, isSuccess } = useQuery({
+    // 쿼리키에 이 id data에 해당하는 것이 각기 다르기 때문에 id를 부여함으로써 구별해야함.
+    queryKey: ["boardDetail", id],
+    queryFn: () => getBoardDetail({ id: Number(id as string) }),
+  });
 
-  if (!article) {
-    return <div>게시글이 없습니다</div>;
-  }
-  // 날짜 포맷팅
-  const formattedDate = new Date(article.createdAt).toISOString().split("T")[0];
-  if (loading) {
-    return <div>로딩중입니다</div>;
-  }
+  const queryClient = useQueryClient();
+
+  const { mutate } = useMutation({
+    mutationFn: deleteBoardDetail,
+    onSuccess: async () => {
+      // 1. boardList를 무효화
+      await queryClient.invalidateQueries({
+        queryKey: ["boardList"],
+      });
+      // 2. 뒤로가기
+      navigate(-1);
+    },
+  });
+
+  const onBackClick = () => {
+    navigate(-1);
+  };
+
+  const onDeleteClick = () => {
+    mutate({ id: Number(id as string) });
+  };
+
   return (
     <Container>
-      <Header>
-        <Title>{article.title}</Title>
-        <ArticleInfo>
-          <p>{article.author}</p>
-          <p>{formattedDate}</p>
-          <p>Category: {article.category}</p>
-        </ArticleInfo>
-      </Header>
+      {isSuccess && (
+        <>
+          <Header>
+            <Title>{data.boardTitle}</Title>
+            <ArticleInfo>
+              <p>작성자: {data.boardWriter}</p>
+              <p>게시글 작성 시간 : {data.boardCreatedTime}</p>
+              <p>카테고리 : {data.boardCategory}</p>
+              <p>조회수 : {data.boardHits}</p>
+            </ArticleInfo>
+          </Header>
 
-      <div>
-        <Content>{article.contents}</Content>
-      </div>
-      <Link to={`/articles/${createdAt}/edit`}>수정하기</Link>
-      <button
-        onClick={() => {
-          navigate(-1);
-        }}
-      >
-        뒤로가기
-      </button>
+          <div>
+            <Content>{data.boardContents}</Content>
+          </div>
+
+          <Link to={`/articles/${id}/edit`}>수정하기</Link>
+        </>
+      )}
+
+      {isLoading && <p>로딩중입니다.</p>}
+
+      {isError && <p>에러입니다.</p>}
+
+      <button onClick={onDeleteClick}>게시물 삭제</button>
+
+      <button onClick={onBackClick}>뒤로가기</button>
     </Container>
   );
 }

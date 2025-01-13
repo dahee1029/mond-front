@@ -60,6 +60,7 @@ function ArticlesMainPage() {
         <MovieList>
           {data.map((item) => (
             <MovieItem key={item.id}>
+              {/* 웹 접근성이 더 좋음 Link 태그는 a태그여서 크롤링봇이 탐지 가능 */}
               <Link to={`/articles/${item.id}`}>{item.boardTitle}</Link>
             </MovieItem>
           ))}

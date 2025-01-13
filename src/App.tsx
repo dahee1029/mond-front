@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import "./styles/reset.css";
 import ArticlesMainPage from "./routes/articles/ArticlesMainPage";
 import ArticlesDetailPage from "./routes/articles/ArticlesDetailPage";
@@ -19,17 +19,11 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<div>안녕하세요</div>} />
+            <Route path="*" element={<Navigate to="/articles" replace />} />
             <Route path="/articles" element={<ArticlesMainPage />} />
             <Route path="/articles/add" element={<ArticlesAddPage />} />
-            <Route
-              path="/articles/:createdAt"
-              element={<ArticlesDetailPage />}
-            />
-            <Route
-              path="/articles/:createdAt/edit"
-              element={<ArticlesEditPage />}
-            />
+            <Route path="/articles/:id" element={<ArticlesDetailPage />} />
+            <Route path="/articles/:id/edit" element={<ArticlesEditPage />} />
             <Route path="/auth/login" element={<UserLoginPage />} />
             <Route path="/auth/signup" element={<UserSignupPage />} />
             <Route path="/auth/:userId/profile" element={<UserProfilePage />} />
